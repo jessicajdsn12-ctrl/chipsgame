@@ -10,20 +10,18 @@ app.use(cors());
 app.use(express.json()); // Permite leer JSON en las peticiones
 app.use(express.static(path.join(__dirname, 'public')));
 
-/* =====================================================
-   CONFIGURACIÓN
-   ===================================================== */
+
 const CHEAPSHARK = 'https://www.cheapshark.com/api/1.0';
 const HEADERS = { 'User-Agent': 'ChipsGame/1.0 (proyecto personal)' };
 
-const MAX_RESULTADOS = 5;                    // juegos por búsqueda
+const MAX_RESULTADOS = 5;                    // juegos que se muestran por búsqueda
+const CANDIDATOS = 60;                       // juegos que pedimos a CheapShark para ordenarlos por parecido
 const PAUSA_ENTRE_LLAMADAS_MS = 400;         // espera entre llamadas a CheapShark
 const CACHE_BUSQUEDA_MS = 30 * 60 * 1000;    // una búsqueda repetida se sirve de memoria 30 min
 const CACHE_JUEGO_MS = 6 * 60 * 60 * 1000;   // los precios de un juego se refrescan cada 6 h
 const PAUSA_SI_LIMITA_MS = 5 * 60 * 1000;    // si CheapShark nos limita, no lo llamamos en 5 min
 
-/* Tiendas de CheapShark: id, nombre y url.
-   Una sola lista para todo (antes había tres que no coincidían). */
+// Tiendas de CheapShark: id, nombre y url.
 const TIENDAS = [
     [1,  'Steam',          'https://store.steampowered.com'],
     [2,  'GamersGate',     'https://www.gamersgate.com'],
@@ -41,20 +39,57 @@ const TIENDAS = [
 ];
 const NOMBRES_TIENDAS = new Map(TIENDAS.map(([id, nombre]) => [id, nombre]));
 
-/* =====================================================
-   ESTADO EN MEMORIA (se reinicia al apagar el servidor)
-   ===================================================== */
+//ESTADO EN MEMORIA (se reinicia al apagar el servidor)
+  
 const cacheBusquedas = new Map(); // "término" -> { hasta, resultados }
 const ultimaConsulta = new Map(); // gameID de CheapShark -> momento del último refresco de precios
 let bloqueadoHasta = 0;           // mientras dure, no se llama a CheapShark
 
 const dormir = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/* =====================================================
-   LLAMADAS A CHEAPSHARK
-   Todas pasan por aquí: así detectamos el límite de peticiones
-   en un solo sitio y dejamos de llamar en cuanto aparece.
-   ===================================================== */
+// ORDEN POR PARECIDO CON LO BUSCADO
+function normalizar(texto) {
+    return String(texto ?? '')
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita tildes
+        .replace(/[™®©]/g, '')
+        .replace(/[^a-z0-9]+/g, ' ')                       // signos fuera
+        .trim();
+}
+
+function puntuar(titulo, consulta) {
+    const t = normalizar(titulo);
+    const q = normalizar(consulta);
+    if (!t || !q) return 0;
+    if (t === q) return 1000;                               // título exacto
+
+    let puntos = 0;
+    if (t.startsWith(q)) puntos += 600;                     // empieza por lo buscado
+    else if (t.includes(q)) puntos += 400;                  // contiene la frase completa
+
+    // Cuántas palabras buscadas aparecen (completas = 1, empezadas por ellas = 0.6)
+    const palabrasT = t.split(' ');
+    const palabrasQ = q.split(' ');
+    const aciertos = palabrasQ.reduce((suma, p) => {
+        if (palabrasT.includes(p)) return suma + 1;
+        if (palabrasT.some((w) => w.startsWith(p))) return suma + 0.6;
+        return suma;
+    }, 0);
+    puntos += 200 * (aciertos / palabrasQ.length);
+
+    // Cuantas menos palabras sobren
+    puntos -= Math.min(100, Math.max(0, palabrasT.length - palabrasQ.length) * 10);
+    return puntos;
+}
+
+function ordenarPorParecido(juegos, consulta) {
+    return juegos
+        .map((juego, posicion) => ({ juego, posicion, puntos: puntuar(juego.external, consulta) }))
+        .sort((a, b) => b.puntos - a.puntos || a.posicion - b.posicion)
+        .map((x) => x.juego);
+}
+
+// LLAMADAS A CHEAPSHARK
 function errorDeLimite() {
     bloqueadoHasta = Date.now() + PAUSA_SI_LIMITA_MS;
     console.error(`CheapShark está limitando las peticiones. Sin llamar a su API durante ${PAUSA_SI_LIMITA_MS / 60000} min.`);
@@ -86,10 +121,9 @@ async function cheapshark(ruta, params) {
     return respuesta.data;
 }
 
-/* =====================================================
-   BASE DE DATOS
-   ===================================================== */
-// Se ejecuta una sola vez al arrancar (antes se repetía en cada búsqueda y en cada juego)
+// BASE DE DATOS
+   
+// Se ejecuta una sola vez al arrancar
 async function prepararTiendas() {
     await pool.query(
         `INSERT INTO tiendas (id, nombre, url_base) VALUES ?
@@ -98,7 +132,7 @@ async function prepararTiendas() {
     );
 }
 
-// Guarda el juego y devuelve su id interno (sin hacer un SELECT extra).
+// Guarda el juego y devuelve su id interno
 // Si el título ya existía con otro gameID, devuelve el id de esa fila en vez de romper.
 async function guardarJuego(item) {
     const [r] = await pool.query(
@@ -125,15 +159,16 @@ async function guardarPrecios(juegoId, deals = []) {
     }
 }
 
-// Plan B cuando CheapShark nos limita: juegos que ya tenemos guardados con precios
+// cuando CheapShark  limita: juegos que ya tenemos guardados con precios
 async function responderDesdeLocal(res, termino) {
     const [filas] = await pool.query(
-        `SELECT DISTINCT j.id AS id_interno, j.titulo AS title, j.imagen_url AS thumbnail
+        `SELECT j.id AS id_interno, j.titulo AS title, j.imagen_url AS thumbnail
          FROM juegos j
-         JOIN precios p ON p.juego_id = j.id
          WHERE j.titulo LIKE ?
+           AND EXISTS (SELECT 1 FROM precios p WHERE p.juego_id = j.id)
+         ORDER BY (j.titulo = ?) DESC, (j.titulo LIKE ?) DESC, CHAR_LENGTH(j.titulo) ASC
          LIMIT ?`,
-        [`%${termino}%`, MAX_RESULTADOS]
+        [`%${termino}%`, termino, `${termino}%`, MAX_RESULTADOS]
     );
 
     if (filas.length > 0) {
@@ -151,9 +186,7 @@ async function responderDesdeLocal(res, termino) {
     });
 }
 
-/* =====================================================
-   RUTAS
-   ===================================================== */
+//RUTAS
 app.get('/api/buscar-juego/:titulo', async (req, res) => {
     const termino = req.params.titulo.trim();
     if (!termino) {
@@ -161,17 +194,17 @@ app.get('/api/buscar-juego/:titulo', async (req, res) => {
     }
     const clave = termino.toLowerCase();
 
-    // 1) ¿Búsqueda reciente? Se responde sin llamar a CheapShark
+    //  Se responde sin llamar a CheapShark
     const guardada = cacheBusquedas.get(clave);
     if (guardada && guardada.hasta > Date.now()) {
         return res.json({ exito: true, fuente: 'caché', resultados: guardada.resultados });
     }
 
     try {
-        // 2) Una llamada para buscar los juegos
+        // Una llamada para buscar los juegos
         let juegosExternos;
         try {
-            juegosExternos = await cheapshark('games', { title: termino, limit: MAX_RESULTADOS });
+            juegosExternos = await cheapshark('games', { title: termino, limit: CANDIDATOS });
         } catch (err) {
             if (err.limitado) return await responderDesdeLocal(res, termino);
             throw err;
@@ -181,12 +214,14 @@ app.get('/api/buscar-juego/:titulo', async (req, res) => {
             return res.json({ exito: true, resultados: [] });
         }
 
-        // 3) Precios de cada juego, solo si no se han refrescado hace poco
+        // Precios de cada juego solo si no se han refrescado hace poco
         const resultados = [];
-        let usarApi = true;   // pasa a false en cuanto CheapShark nos limita
+        let usarApi = true;   // pasa a false en cuanto CheapShark limita
         let cachear = true;   // una búsqueda con datos incompletos no se guarda en caché
 
-        for (const item of juegosExternos.slice(0, MAX_RESULTADOS)) {
+        const elegidos = ordenarPorParecido(juegosExternos, termino).slice(0, MAX_RESULTADOS);
+
+        for (const item of elegidos) {
             const juegoId = await guardarJuego(item);
 
             const reciente = (ultimaConsulta.get(item.gameID) ?? 0) > Date.now() - CACHE_JUEGO_MS;
@@ -268,9 +303,7 @@ app.get('/api/comparar/:id', async (req, res) => {
     }
 });
 
-/* =====================================================
-   ARRANQUE
-   ===================================================== */
+//ARRANQUE
 const PORT = process.env.PORT || 3000;
 
 prepararTiendas()
