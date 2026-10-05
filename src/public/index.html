@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Compara los mejores precios de videojuegos en distintas tiendas."
+    />
+    <title>ChipsGame · Compara precios de videojuegos</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main>
+      <header class="hero-section" id="inicio">
+        <h1 class="logo-title">Chips<span>Game</span></h1>
+        <p class="tagline">Encuentra tu juego y compara los mejores precios.</p>
+      </header>
+
+      <section class="carousel-section" id="destacados" aria-label="Juegos destacados">
+        <div class="slider">
+          <div class="slide-track">
+          <div class="slide">
+                        <button
+              type="button"
+              class="game-card"
+              data-busqueda="Spider-Man"
+              aria-label="Buscar ofertas de Marvel's Spider-Man"
+            >
+              <img src="img/spiderman.webp" alt="" width="160" height="240" decoding="async" />
+            </button>
+          </div>
+          <div class="slide">
+                        <button
+              type="button"
+              class="game-card"
+              data-busqueda="Grand Theft Auto V"
+              aria-label="Buscar ofertas de Grand Theft Auto V"
+            >
+              <img src="img/gta5.jpg" alt="" width="160" height="240" decoding="async" />
+            </button>
+          </div>
+          <div class="slide">
+                        <button
+              type="button"
+              class="game-card"
+              data-busqueda="The Last of Us"
+              aria-label="Buscar ofertas de The Last of Us"
+            >
+              <img src="img/the_last_of_us.jpg" alt="" width="160" height="240" decoding="async" />
+            </button>
+          </div>
+          <div class="slide">
+                        <button
+              type="button"
+              class="game-card"
+              data-busqueda="Battlefield 6"
+              aria-label="Buscar ofertas de Battlefield 6"
+            >
+              <img src="img/battle.jpg" alt="" width="160" height="240" decoding="async" />
+            </button>
+          </div>
+          <div class="slide">
+                        <button
+              type="button"
+              class="game-card"
+              data-busqueda="Blasphemous"
+              aria-label="Buscar ofertas de Blasphemous"
+            >
+              <img src="img/blas.jpg" alt="" width="160" height="240" decoding="async" />
+            </button>
+          </div>
+          <div class="slide">
+                        <button
+              type="button"
+              class="game-card"
+              data-busqueda="Hogwarts Legacy"
+              aria-label="Buscar ofertas de Hogwarts Legacy"
+            >
+              <img src="img/harry.jpg" alt="" width="160" height="240" decoding="async" />
+            </button>
+          </div>
+          <div class="slide">
+                        <button
+              type="button"
+              class="game-card"
+              data-busqueda="For Honor"
+              aria-label="Buscar ofertas de For Honor"
+            >
+              <img src="img/hornor.jpg" alt="" width="160" height="240" decoding="async" />
+            </button>
+          </div>
+          <div class="slide">
+                        <button
+              type="button"
+              class="game-card"
+              data-busqueda="Red Dead Redemption 2"
+              aria-label="Buscar ofertas de Red Dead Redemption 2"
+            >
+              <img src="img/rd2.jpg" alt="" width="160" height="240" decoding="async" />
+            </button>
+          </div>
+          <div class="slide">
+                        <button
+              type="button"
+              class="game-card"
+              data-busqueda="Halo 2"
+              aria-label="Buscar ofertas de Halo 2"
+            >
+              <img src="img/ahlo.jpg" alt="" width="160" height="240" decoding="async" />
+            </button>
+          </div>
+          <div class="slide">
+                        <button
+              type="button"
+              class="game-card"
+              data-busqueda="Cyberpunk 2077"
+              aria-label="Buscar ofertas de Cyberpunk 2077"
+            >
+              <img src="img/cyber.jpg" alt="" width="160" height="240" decoding="async" />
+            </button>
+          </div>
+          </div>
+        </div>
+      </section>
+
+      <form
+        class="search-container"
+        id="buscador"
+        role="search"
+        onsubmit="event.preventDefault(); buscarJuego();"
+      >
+        <label class="sr-only" for="inputJuego">Buscar un juego</label>
+        <input
+          type="text"
+          id="inputJuego"
+          class="search-input"
+          placeholder="Buscar un juego…"
+          autocomplete="off"
+        />
+        <button type="submit" class="search-btn">Buscar</button>
+      </form>
+
+      <div id="resultados" aria-live="polite"></div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <span class="logo-footer">ChipsGame</span>
+          <p>
+            Compara el precio de un videojuego en varias tiendas y encuentra
+            la oferta más barata en segundos.
+          </p>
+        </div>
+
+        <nav class="footer-col" aria-label="Navegación">
+          <h3>Explorar</h3>
+          <ul>
+            <li><a href="#destacados">Juegos destacados</a></li>
+            <li><a href="#buscador">Buscar un juego</a></li>
+            <li><a href="#inicio">Volver arriba</a></li>
+          </ul>
+        </nav>
+
+        <div class="footer-col">
+          <h3>Fuente de precios</h3>
+          <ul>
+            <li>
+              <a
+                href="https://www.cheapshark.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                >CheapShark</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-legal">
+        <p>
+          Los precios pueden cambiar. Confirma siempre el importe final en la
+          tienda antes de comprar.
+        </p>
+        <p>
+          Los nombres y las portadas de los juegos pertenecen a sus
+          respectivos propietarios. © <span id="anio"></span> ChipsGame
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // duplicacion del set 1 para el bucle infinito 
+      const track = document.querySelector(".slide-track");
+      [...track.children].forEach((slide) => {
+        const copia = slide.cloneNode(true);
+        copia.setAttribute("aria-hidden", "true");
+        copia.querySelector("button").tabIndex = -1; // la copia no se enfoca con teclado
+        track.appendChild(copia);
+      });
+
+      // Clic en un juego destacado para busca su oferta 
+      track.addEventListener("click", (e) => {
+        const tarjeta = e.target.closest(".game-card");
+        if (!tarjeta) return;
+
+        document.getElementById("inputJuego").value = tarjeta.dataset.busqueda;
+        buscarJuego();
+
+        // Lleva la vista al buscador para ver los resultados
+        const sinAnimacion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        document.getElementById("buscador").scrollIntoView({
+          behavior: sinAnimacion ? "auto" : "smooth",
+          block: "start",
+        });
+      });
+
+      // Evita que un texto de la API rompa el HTML
+      const esc = (t) =>
+        String(t ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+
+      // Url segura para usarla dentro de url('...') en CSS
+      const cssUrl = (u) =>
+        String(u).replace(
+          /['"()\s]/g,
+          (c) => "%" + c.charCodeAt(0).toString(16).toUpperCase(),
+        );
+
+      // Una sola oferta por tienda (la más barata) de menor a mayor precio
+      function mejoresPorTienda(ofertas = []) {
+        const mapa = new Map();
+        ofertas.forEach((o) => {
+          const actual = mapa.get(o.tienda);
+          if (!actual || Number(o.precio_actual) < Number(actual.precio_actual)) {
+            mapa.set(o.tienda, o);
+          }
+        });
+        return [...mapa.values()].sort(
+          (a, b) => Number(a.precio_actual) - Number(b.precio_actual),
+        );
+      }
+
+      // Resultados 
+      function crearTarjeta(datos) {
+        const ofertas = mejoresPorTienda(datos.todas_las_ofertas);
+        const mejor = ofertas[0];
+
+        const estilo = datos.portada
+          ? `style="--portada:url('${cssUrl(datos.portada)}')"`
+          : "";
+
+        const imagen = datos.portada
+          ? `<img class="portada" src="${esc(datos.portada)}"
+                  alt="Portada de ${esc(datos.juego)}" loading="lazy"
+                  onerror="this.remove()">`
+          : "";
+
+        const precio = mejor
+          ? `<p class="mejor-precio">
+               <span>Desde</span>
+               <strong>${esc(mejor.precio_actual)} €</strong>
+             </p>`
+          : '<p class="sin-ofertas">No hay ofertas registradas para este juego.</p>';
+
+        const filas = ofertas
+          .map(
+            (o, i) => `
+              <div class="oferta ${i === 0 ? "mejor-oferta" : ""}">
+                <span class="tienda">${esc(o.tienda)}</span>
+                ${i === 0 ? '<span class="etiqueta">Mejor precio</span>' : ""}
+                <strong class="precio">${esc(o.precio_actual)} €</strong>
+              </div>`,
+          )
+          .join("");
+
+        return `
+          <article class="tarjeta-juego" ${estilo}>
+            <div class="cabecera">
+              ${imagen}
+              <div class="titulo">
+                <h2>${esc(datos.juego)}</h2>
+                ${precio}
+              </div>
+            </div>
+            ${filas ? `<div class="lista-ofertas">${filas}</div>` : ""}
+          </article>`;
+      }
+
+
+      let busquedaActual = 0; // evita que una búsqueda lenta pise a otra más reciente
+
+      const cacheBusquedas = new Map(); // termino -> HTML de resultados
+
+async function buscarJuego() {
+  const titulo = document.getElementById("inputJuego").value.trim();
+  const divResultados = document.getElementById("resultados");
+  const boton = document.querySelector(".search-btn");
+  if (!titulo) return;
+  const idBusqueda = ++busquedaActual;
+  const clave = titulo.toLowerCase();
+
+  // Si ya se buscó con éxito no se vuelve a pedir al servidor
+  if (cacheBusquedas.has(clave)) {
+    divResultados.innerHTML = cacheBusquedas.get(clave);
+    return;
+  }
+
+  divResultados.innerHTML =
+    '<p class="estado">Buscando las mejores ofertas…</p>';
+  boton.disabled = true;
+
+  try {
+    const resBusqueda = await fetch(
+      `/api/buscar-juego/${encodeURIComponent(titulo)}`,
+    );
+    const datosBusqueda = await resBusqueda.json();
+    if (idBusqueda !== busquedaActual) return;
+
+    if (!datosBusqueda.exito) {
+      divResultados.innerHTML = `<p class="estado">Error: ${esc(datosBusqueda.mensaje)}</p>`;
+      return;
+    }
+
+    if (!datosBusqueda.resultados?.length) {
+      divResultados.innerHTML = `<p class="estado">No hemos encontrado ningún juego con «${esc(titulo)}».</p>`;
+      return;
+    }
+
+    const comparativas = await Promise.all(
+      datosBusqueda.resultados.map((j) =>
+        fetch(`/api/comparar/${j.id_interno}`).then((r) => r.json()),
+      ),
+    );
+    if (idBusqueda !== busquedaActual) return;
+
+    const html = comparativas.map(crearTarjeta).join("");
+    cacheBusquedas.set(clave, html); // solo se guardan las búsquedas correctas
+    divResultados.innerHTML = html;
+  } catch (error) {
+    divResultados.innerHTML =
+      '<p class="estado">Error de conexión con el servidor local.</p>';
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+      // footer con año 
+      document.getElementById("anio").textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
