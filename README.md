@@ -2,7 +2,7 @@
 
 Comparador de precios de videojuegos: busca un juego y ve en qué tienda está más barato.
 
-**Demo:** [https://chipsgame.onrender.com/](https://tu-proyecto.onrender.com)
+**Demo:** [https://chipsgame.onrender.com/](https://chipsgame.onrender.com/)
 > La demo está en un plan gratuito que se "duerme" tras 15 minutos sin visitas. La primera carga puede tardar cerca de un minuto; después va con normalidad.
 
 ![docs/captura.png](docs/captura.png)
